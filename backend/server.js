@@ -1,11 +1,35 @@
 const express = require("express");
+const {MongoClient} = require("mongodb");
 
 const app = express();
 
-app.get("/", (req,res) => {
-    res.send("backend is running");
-});
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
 
-app.listen(3000, () => {
-    console.log("server running at http://localhost:3000");
-});
+async function startServer() {
+    try {
+        await client.connect();
+        console.log("Connected to mongodb");
+
+        const db = client.db("school_demo");
+        const studentsCollection = db.collection("students");
+
+        await studentsCollection.insertOne({
+            firstName: "John",
+            lastName: "Doe",
+            gradeLevel: 10
+        });
+
+        app.get("/", (req,res) => {
+            res.send("Backend connected to mongodb");
+        });
+
+        app.listen(3000, () => {
+            console.log("Server running at http://localhost:3000");
+        });
+    } catch (error) {
+        console.error("Error connecting to mongodb:", error);
+    }
+}
+
+startServer();
